@@ -7,7 +7,7 @@ const JWT_SECRET = 'kelas9a_smpn1_jwt_2025_aman_schoolapp_yudis';
 export interface JWTPayload {
   userId: number;
   username: string;
-  role: 'admin' | 'student';
+  role: 'admin' | 'student' | 'walikelas';
 }
 
 export function signToken(payload: JWTPayload): string {
