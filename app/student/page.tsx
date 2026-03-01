@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 type Tab = 'home' | 'siswa' | 'jadwal' | 'info' | 'kegiatan';
 
 interface Student { id:number; name:string; nis:string; position:string; photo_url:string|null; }
-interface Schedule { id:number; day:string; start_time:string; end_time:string; subject:string; }
+interface Schedule { id:number; day:string; start_time:string; end_time:string; subject:string; teacher:string|null; slot_number:number|null; }
 interface Announcement { id:number; title:string; content:string; created_at:string; }
 interface Activity { id:number; title:string; description:string; date:string; }
 
@@ -26,7 +26,7 @@ export default function StudentPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [breakCfg, setBreakCfg] = useState({break_start:'11:00',break_end:'13:00',break_label:'☀️ Istirahat'});
+  const [breakCfg, setBreakCfg] = useState({break_start:'11:00',break_end:'13:00',break_label:'☀️ Istirahat',break_slot:'5'});
   const [search, setSearch] = useState('');
   const router = useRouter();
 
@@ -267,49 +267,60 @@ export default function StudentPage() {
         {tab==='jadwal' && (
           <div>
             <SectionLabel text="Jadwal Pelajaran · XI TSM 2"/>
-            <div style={{background:'rgba(255,255,255,.06)',backdropFilter:'blur(12px)',border:'1px solid rgba(255,255,255,.1)',borderRadius:20,overflow:'hidden'}}>
+            <div style={{background:'rgba(255,255,255,.05)',backdropFilter:'blur(12px)',border:'1px solid rgba(255,255,255,.1)',borderRadius:20,overflow:'hidden'}}>
               <div style={{overflowX:'auto'}}>
-                <table style={{width:'100%',borderCollapse:'collapse',fontSize:10,minWidth:320}}>
+                <table style={{width:'100%',borderCollapse:'collapse',minWidth:480}}>
                   <thead>
-                    <tr style={{background:'rgba(99,102,241,.2)',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
-                      <th style={{padding:'12px 12px',textAlign:'left',fontWeight:700,color:'rgba(255,255,255,.6)',fontSize:9,letterSpacing:1,textTransform:'uppercase',whiteSpace:'nowrap'}}>JAM</th>
-                      {DAYS.map(d=><th key={d} style={{padding:'12px 6px',fontWeight:700,color:'rgba(255,255,255,.6)',fontSize:9,letterSpacing:1,textTransform:'uppercase'}}>{d.substring(0,3)}</th>)}
+                    <tr style={{background:'rgba(99,102,241,.25)',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
+                      <th style={{padding:'12px 10px',textAlign:'left',fontSize:9,fontWeight:700,color:'rgba(255,255,255,.5)',letterSpacing:1,textTransform:'uppercase',width:52,whiteSpace:'nowrap'}}>HARI</th>
+                      {[1,2,3,4,5,6,7,8].map(n=>{
+                        const bSlot=parseInt(breakCfg.break_slot||'5');
+                        return n===bSlot
+                          ? <th key={n} style={{padding:'12px 4px',fontSize:9,fontWeight:700,color:'#fbbf24',textAlign:'center',background:'rgba(245,158,11,.12)',minWidth:38}}>IST<br/><span style={{fontSize:7}}>☀️</span></th>
+                          : <th key={n} style={{padding:'12px 6px',fontSize:9,fontWeight:700,color:'rgba(255,255,255,.5)',letterSpacing:.5,textAlign:'center',minWidth:72}}>JP {n}</th>;
+                      })}
                     </tr>
                   </thead>
                   <tbody>
-                    {times.map((time,i)=>{
-                      const slots=schedules.filter(sc=>sc.start_time===time);
-                      return (
-                        <tr key={time} style={{borderBottom:'1px solid rgba(255,255,255,.05)',background:i%2===0?'transparent':'rgba(255,255,255,.02)'}}>
-                          <td style={{padding:'10px 12px',fontFamily:'monospace',fontSize:9,color:'rgba(255,255,255,.4)',whiteSpace:'nowrap'}}>
-                            {time}<br/><span style={{fontSize:8,opacity:.6}}>{slots[0]?.end_time}</span>
-                          </td>
-                          {DAYS.map(day=>{
-                            const found=slots.find(sc=>sc.day===day);
-                            return (
-                              <td key={day} style={{padding:'8px 4px',textAlign:'center'}}>
-                                {found
-                                  ? <span style={{display:'inline-block',background:'rgba(99,102,241,.25)',color:'#c7d2fe',borderRadius:8,padding:'4px 5px',fontSize:9,fontWeight:700,lineHeight:1.3,maxWidth:58,wordBreak:'break-word' as const,border:'1px solid rgba(99,102,241,.3)'}}>{found.subject}</span>
-                                  : <span style={{color:'rgba(255,255,255,.1)',fontSize:12}}>·</span>}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                    <tr style={{background:'rgba(245,158,11,.08)',borderTop:'1px solid rgba(245,158,11,.2)'}}>
-                      <td style={{padding:'10px 12px',fontSize:9,color:'#fbbf24',fontFamily:'monospace',fontWeight:700,whiteSpace:'nowrap'}}>
-                        {breakCfg.break_start}<br/><span style={{fontSize:8,opacity:.7}}>{breakCfg.break_end}</span>
-                      </td>
-                      <td colSpan={5} style={{textAlign:'center',color:'#fbbf24',fontWeight:700,fontSize:11,padding:'10px'}}>
-                        {breakCfg.break_label}
-                      </td>
-                    </tr>
-                    {times.length===0&&<tr><td colSpan={6} style={{padding:'40px',textAlign:'center',color:'rgba(255,255,255,.25)',fontSize:12}}>Belum ada jadwal</td></tr>}
+                    {['Senin','Selasa','Rabu','Kamis','Jumat'].map((day,di)=>(
+                      <tr key={day} style={{borderBottom:di<4?'1px solid rgba(255,255,255,.05)':'none',background:di%2===0?'transparent':'rgba(255,255,255,.02)'}}>
+                        <td style={{padding:'6px 10px',fontWeight:800,fontSize:10,color:'rgba(255,255,255,.6)',letterSpacing:.5,verticalAlign:'middle',whiteSpace:'nowrap'}}>{day.substring(0,3).toUpperCase()}</td>
+                        {[1,2,3,4,5,6,7,8].map(slot=>{
+                          const bSlot=parseInt(breakCfg.break_slot||'5');
+                          if(slot===bSlot){
+                            return <td key={slot} style={{padding:'4px 2px',background:'rgba(245,158,11,.06)',textAlign:'center',verticalAlign:'middle'}}>
+                              <div style={{fontSize:10,color:'rgba(245,158,11,.4)'}}>☀️</div>
+                            </td>;
+                          }
+                          const found=schedules.find((s:Schedule)=>s.day===day&&s.slot_number===slot);
+                          return (
+                            <td key={slot} style={{padding:'4px 3px',verticalAlign:'top',height:72}}>
+                              {found ? (
+                                <div style={{background:'linear-gradient(135deg,rgba(99,102,241,.25),rgba(139,92,246,.15))',border:'1px solid rgba(99,102,241,.35)',borderRadius:10,padding:'6px 7px',minHeight:64,height:'100%'}}>
+                                  <div style={{fontSize:11,fontWeight:800,color:'#e0e7ff',lineHeight:1.2,marginBottom:3}}>{found.subject}</div>
+                                  {found.teacher&&<div style={{fontSize:8,color:'rgba(255,255,255,.4)',lineHeight:1.3,overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical' as const}}>{found.teacher}</div>}
+                                  <div style={{fontSize:8,color:'rgba(255,255,255,.25)',marginTop:3,fontFamily:'monospace'}}>{found.start_time}–{found.end_time}</div>
+                                </div>
+                              ) : (
+                                <div style={{minHeight:64,borderRadius:10,border:'1px dashed rgba(255,255,255,.06)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                  <span style={{color:'rgba(255,255,255,.08)',fontSize:14}}>·</span>
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
+              {/* Keterangan istirahat */}
+              <div style={{padding:'10px 14px',borderTop:'1px solid rgba(255,255,255,.06)',display:'flex',alignItems:'center',gap:8}}>
+                <div style={{width:10,height:10,background:'rgba(245,158,11,.3)',border:'1px solid rgba(245,158,11,.4)',borderRadius:3,flexShrink:0}}/>
+                <div style={{fontSize:10,color:'rgba(255,255,255,.35)'}}>{breakCfg.break_label} · {breakCfg.break_start}–{breakCfg.break_end}</div>
+              </div>
             </div>
+            {schedules.length===0&&<div style={{textAlign:'center',color:'rgba(255,255,255,.3)',padding:'30px 0',fontSize:12}}>Belum ada jadwal</div>}
           </div>
         )}
 

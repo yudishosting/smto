@@ -9,15 +9,17 @@ export async function GET() {
   const auth = getAuthFromCookies();
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const sql = getDb();
-  const subjects = await sql`SELECT id, name FROM subjects ORDER BY name`;
+  try { await sql`ALTER TABLE subjects ADD COLUMN IF NOT EXISTS teacher VARCHAR(200)`; } catch {}
+  const subjects = await sql`SELECT id, name, teacher FROM subjects ORDER BY name`;
   return NextResponse.json(subjects);
 }
 
 export async function POST(req: Request) {
   const auth = getAuthFromCookies();
   if (!auth || auth.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  const { name } = await req.json();
+  const { name, teacher } = await req.json();
   const sql = getDb();
-  const result = await sql`INSERT INTO subjects (name) VALUES (${name}) RETURNING *`;
+  try { await sql`ALTER TABLE subjects ADD COLUMN IF NOT EXISTS teacher VARCHAR(200)`; } catch {}
+  const result = await sql`INSERT INTO subjects (name, teacher) VALUES (${name}, ${teacher||null}) RETURNING *`;
   return NextResponse.json(result[0], { status: 201 });
 }
