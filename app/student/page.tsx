@@ -19,7 +19,7 @@ export default function StudentPage() {
   const [schedules,setSchedules]         = useState<Schedule[]>([]);
   const [announcements,setAnnouncements] = useState<Announcement[]>([]);
   const [activities,setActivities]       = useState<Activity[]>([]);
-  const [brk,setBrk] = useState({break_start:'11:00',break_end:'13:00',break_label:'Istirahat',break_slot:'5'});
+  const [brk,setBrk] = useState({break_start:'11:00',break_end:'13:00',break_label:'Istirahat',break_slot:'5',total_slots:'8'});
   const [q,setQ]     = useState('');
   const [openId,setOpenId] = useState<number|null>(null);
 
@@ -35,8 +35,9 @@ export default function StudentPage() {
   const upcoming = activities.filter(a=>new Date(a.date)>=now).sort((a,b)=>+new Date(a.date)-+new Date(b.date));
   const past     = activities.filter(a=>new Date(a.date)<now).sort((a,b)=>+new Date(b.date)-+new Date(a.date));
   const bSlot    = parseInt(brk.break_slot||'5');
+  const totalSl  = Math.max(1, Math.min(20, parseInt(brk.total_slots||'8')));
   const DAYS     = ['Senin','Selasa','Rabu','Kamis','Jumat'];
-  const SLOTS    = [1,2,3,4,5,6,7,8];
+  const SLOTS    = Array.from({length:totalSl},(_,i)=>i+1);
   const filt     = students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.nis.includes(q));
   const wali     = filt.filter(s=>s.position==='Wali Kelas');
   const pengurus = filt.filter(s=>!['Anggota','Wali Kelas'].includes(s.position));
@@ -62,13 +63,13 @@ export default function StudentPage() {
 
   const Card = ({children,style={}}:{children:React.ReactNode;style?:React.CSSProperties}) => (
     <div style={{background:'#fff',borderRadius:20,padding:20,
-      boxShadow:'0 1px 4px rgba(0,0,0,.06), 0 4px 24px rgba(0,0,0,.06)',...style}}>
+      boxShadow:'0 2px 12px rgba(0,0,0,.06)',...style}}>
       {children}
     </div>
   );
 
   const SHead = ({text}:{text:string}) => (
-    <p style={{fontSize:11,fontWeight:700,color:'#aaa',letterSpacing:1.2,
+    <p style={{fontSize:11,fontWeight:600,color:'#bbb',letterSpacing:.5,
       textTransform:'uppercase' as const,marginBottom:10}}>{text}</p>
   );
 
@@ -81,11 +82,11 @@ export default function StudentPage() {
   ];
 
   return (
-    <div style={{minHeight:'100vh',background:'#F2F4F8',fontFamily:"'Outfit',sans-serif",color:'#111'}}>
+    <div style={{minHeight:'100vh',background:'#F5F5F0',fontFamily:"'DM Sans',sans-serif",color:'#111'}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-        body{background:#F2F4F8}
+        body{background:#F5F5F0}
         ::-webkit-scrollbar{display:none}
         input::placeholder{color:#C4C9D4}
         input:focus{outline:none}
@@ -98,8 +99,7 @@ export default function StudentPage() {
       {/* ░░ TOPBAR ░░ */}
       <div style={{background:'#fff',padding:'16px 20px',display:'flex',
         alignItems:'center',justifyContent:'space-between',
-        borderBottom:'1px solid #EBEBEF',position:'sticky',top:0,zIndex:40,
-        boxShadow:'0 1px 0 #EBEBEF'}}>
+        borderBottom:'1px solid #EBEBEF',position:'sticky',top:0,zIndex:40}}>
         <div>
           <div style={{fontSize:20,fontWeight:800,color:'#111',letterSpacing:-.5,lineHeight:1}}>XI TSM 2</div>
           <div style={{fontSize:11,color:'#AAA',marginTop:3,fontWeight:500}}>SMKN 2 Jember · 2024 – 2027</div>
@@ -117,7 +117,7 @@ export default function StudentPage() {
           <div className="pg" style={{display:'flex',flexDirection:'column',gap:16}}>
 
             {/* Hero */}
-            <div style={{background:'linear-gradient(145deg,#0F172A 0%,#1E293B 100%)',
+            <div style={{background:'linear-gradient(145deg,#1C1C2E 0%,#2D2B55 100%)',
               borderRadius:24,padding:'28px 24px',overflow:'hidden',position:'relative'}}>
               <div style={{position:'absolute',width:180,height:180,borderRadius:'50%',
                 background:'rgba(255,255,255,.03)',top:-50,right:-40}}/>
@@ -180,7 +180,7 @@ export default function StudentPage() {
                 <p style={{fontSize:10,fontWeight:700,color:'#10B981',letterSpacing:1,
                   textTransform:'uppercase' as const,marginBottom:12}}>🎯 Acara Terdekat</p>
                 <div style={{display:'flex',gap:14,alignItems:'flex-start'}}>
-                  <div style={{background:'#0F172A',borderRadius:14,padding:'10px 14px',
+                  <div style={{background:'#1C1C2E',borderRadius:14,padding:'10px 14px',
                     textAlign:'center',flexShrink:0}}>
                     <div style={{fontSize:22,fontWeight:800,color:'#fff',lineHeight:1}}>
                       {new Date(upcoming[0].date).getDate()}</div>
@@ -320,9 +320,10 @@ export default function StudentPage() {
             {/* timetable */}
             <Card style={{padding:0,overflow:'hidden'}}>
               <div style={{overflowX:'auto'}}>
+
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:520}}>
                   <thead>
-                    <tr style={{background:'#0F172A'}}>
+                    <tr style={{background:'#1C1C2E'}}>
                       <th style={{padding:'13px 14px',textAlign:'left',fontSize:10,
                         fontWeight:700,color:'rgba(255,255,255,.4)',letterSpacing:1,
                         textTransform:'uppercase' as const,width:54,whiteSpace:'nowrap' as const}}>HARI</th>
@@ -354,7 +355,7 @@ export default function StudentPage() {
                           return (
                             <td key={slot} style={{padding:'4px 3px',verticalAlign:'top',height:78}}>
                               {f ? (
-                                <div style={{background:'#0F172A',borderRadius:10,
+                                <div style={{background:'#1C1C2E',borderRadius:10,
                                   padding:'8px 9px',minHeight:70}}>
                                   <p style={{fontSize:11,fontWeight:700,color:'#E2E8F0',
                                     lineHeight:1.3,marginBottom:4}}>{f.subject}</p>
@@ -434,7 +435,7 @@ export default function StudentPage() {
                 <SHead text="Mendatang"/>
                 {upcoming.map(a=>(
                   <Card key={a.id} style={{display:'flex',gap:14,alignItems:'flex-start',padding:'18px 20px'}}>
-                    <div style={{background:'#0F172A',borderRadius:14,
+                    <div style={{background:'#1C1C2E',borderRadius:14,
                       padding:'10px 13px',textAlign:'center',flexShrink:0}}>
                       <p style={{fontSize:22,fontWeight:800,color:'#fff',lineHeight:1}}>
                         {new Date(a.date).getDate()}</p>
@@ -460,7 +461,7 @@ export default function StudentPage() {
                   <div key={a.id} style={{background:'#fff',borderRadius:14,
                     padding:'14px 18px',display:'flex',gap:12,alignItems:'center',
                     opacity:.6,boxShadow:'0 1px 4px rgba(0,0,0,.04)'}}>
-                    <div style={{background:'#F2F4F8',borderRadius:10,padding:'8px 11px',
+                    <div style={{background:'#F5F5F0',borderRadius:10,padding:'8px 11px',
                       textAlign:'center',flexShrink:0,minWidth:46}}>
                       <p style={{fontSize:18,fontWeight:700,lineHeight:1,color:'#777'}}>
                         {new Date(a.date).getDate()}</p>
@@ -508,7 +509,7 @@ export default function StudentPage() {
               <span style={{fontSize:22,filter:active?'none':'grayscale(1) opacity(.4)',transition:'filter .2s'}}>{t.emoji}</span>
               <span style={{fontSize:9.5,fontWeight:700,letterSpacing:.2,transition:'color .2s',
                 color:active?'#0F172A':'#BBB'}}>{t.label}</span>
-              {active&&<div style={{width:18,height:3,borderRadius:99,background:'#0F172A',marginTop:-2}}/>}
+              {active&&<div style={{width:14,height:2.5,borderRadius:99,background:'#1C1C2E',marginTop:-1}}/>}
             </button>
           );
         })}
