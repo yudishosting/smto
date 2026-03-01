@@ -319,7 +319,7 @@ export default function StudentPage() {
 
             {/* timetable */}
             <Card style={{padding:0,overflow:'hidden'}}>
-              <div style={{overflowX:'auto'}}>
+              <div style={{overflowX:'auto',WebkitOverflowScrolling:'touch' as unknown as string}}>
                 <table style={{width:'100%',borderCollapse:'collapse',minWidth:520}}>
                   <thead>
                     <tr style={{background:'#0F172A'}}>
