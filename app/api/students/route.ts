@@ -6,8 +6,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
-  const auth = getAuthFromCookies();
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Public endpoint - no auth required
   const sql = getDb();
   const students = await sql`
     SELECT s.id, s.name, s.nis, s.position, s.photo_url, u.username

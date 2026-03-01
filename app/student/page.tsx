@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 type Tab = 'home' | 'siswa' | 'jadwal' | 'info' | 'kegiatan';
 
@@ -28,7 +27,6 @@ export default function StudentPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [breakCfg, setBreakCfg] = useState({break_start:'11:00',break_end:'13:00',break_label:'☀️ Istirahat',break_slot:'5'});
   const [search, setSearch] = useState('');
-  const router = useRouter();
 
   useEffect(()=>{
     fetch('/api/students').then(r=>r.json()).then(d=>Array.isArray(d)&&setStudents(d)).catch(()=>{});
@@ -38,7 +36,6 @@ export default function StudentPage() {
     fetch('/api/settings').then(r=>r.json()).then(d=>d?.break_start&&setBreakCfg(d)).catch(()=>{});
   },[]);
 
-  const logout = async()=>{ await fetch('/api/auth/logout',{method:'POST'}); router.push('/login'); };
   const filtered = students.filter(s=>s.name.toLowerCase().includes(search.toLowerCase())||s.nis.includes(search));
   const wali    = students.filter(s=>s.position==='Wali Kelas');
   const pengurus = students.filter(s=>!['Anggota','Wali Kelas'].includes(s.position));
@@ -96,7 +93,7 @@ export default function StudentPage() {
               <div style={{fontSize:10,color:'rgba(255,255,255,.45)',fontWeight:500}}>SMKN 2 Jember · 2025/2026</div>
             </div>
           </div>
-          <button onClick={logout} style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.12)',borderRadius:10,padding:'6px 14px',color:'rgba(255,255,255,.7)',fontSize:11,cursor:'pointer',fontFamily:'inherit',fontWeight:600}}>Keluar</button>
+          <a href="/login" style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',borderRadius:10,padding:'6px 12px',color:'rgba(255,255,255,.4)',fontSize:10,fontFamily:'inherit',fontWeight:600,textDecoration:'none'}}>⚙️ Admin</a>
         </div>
         <div style={{display:'flex',overflowX:'auto'}}>
           {tabs.map(t=>(
