@@ -8,11 +8,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (auth.role !== 'admin') redirect('/student');
 
   return (
-    <div style={{minHeight:'100vh', background:'#f0f4ff', fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#0f0c29 0%,#302b63 60%,#24243e 100%)', fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
       <AdminSidebar username={auth.username} />
-      <main style={{padding:'0'}}>
-        {children}
-      </main>
+      <main>{children}</main>
     </div>
   );
 }

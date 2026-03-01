@@ -1,127 +1,71 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 
-interface Announcement {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  created_at: string;
-}
+interface Announcement { id:number; title:string; content:string; created_at:string; }
+
+const inputStyle: React.CSSProperties = {
+  width:'100%',background:'rgba(255,255,255,.08)',border:'1.5px solid rgba(255,255,255,.12)',
+  borderRadius:12,padding:'11px 14px',color:'#fff',fontSize:13,fontFamily:'inherit',
+  outline:'none',boxSizing:'border-box',transition:'all .2s',
+};
 
 export default function AdminAnnouncements() {
   const [items, setItems] = useState<Announcement[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ title: '', content: '' });
+  const [form, setForm] = useState({ title:'', content:'' });
   const [loading, setLoading] = useState(false);
 
-  const fetchItems = () => {
-    fetch('/api/announcements').then(r => r.json()).then(setItems);
-  };
+  const fetch_ = () => fetch('/api/announcements').then(r=>r.json()).then(d=>Array.isArray(d)&&setItems(d));
+  useEffect(()=>{ fetch_(); },[]);
 
-  useEffect(() => { fetchItems(); }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await fetch('/api/announcements', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    setLoading(false);
-    setShowModal(false);
-    setForm({ title: '', content: '' });
-    fetchItems();
+  const handleSubmit = async (e:React.FormEvent) => {
+    e.preventDefault(); setLoading(true);
+    await fetch('/api/announcements',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});
+    setLoading(false); setShowModal(false); setForm({title:'',content:''}); fetch_();
   };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Hapus pengumuman ini?')) return;
-    await fetch('/api/announcements', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    fetchItems();
-  };
+  const del = async(id:number) => { if(!confirm('Hapus pengumuman ini?'))return; await fetch('/api/announcements',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); fetch_(); };
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div style={{padding:16,color:'#fff',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      <style>{`input::placeholder,textarea::placeholder{color:rgba(255,255,255,.3)} input:focus,textarea:focus{outline:none;border-color:rgba(129,140,248,.6)!important;background:rgba(255,255,255,.12)!important}`}</style>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 font-display">Pengumuman</h1>
-          <p className="text-slate-500 mt-1">Kelola pengumuman untuk siswa</p>
+          <div style={{fontSize:18,fontWeight:800,fontFamily:"'Sora',sans-serif"}}>📢 Pengumuman</div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginTop:2}}>{items.length} pengumuman aktif</div>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-blue-200"
-        >
-          <span>+</span> Buat Pengumuman
-        </button>
+        <button onClick={()=>setShowModal(true)} style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',border:'none',borderRadius:12,padding:'10px 16px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',boxShadow:'0 4px 16px rgba(99,102,241,.4)'}}>+ Buat</button>
       </div>
 
-      <div className="grid gap-4">
-        {items.map((item) => (
-          <div key={item.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-800 text-lg font-display">{item.title}</h3>
-                <p className="text-slate-500 text-sm mt-1">
-                  Oleh {item.author} · {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-                <p className="text-slate-600 mt-3 leading-relaxed">{item.content}</p>
-              </div>
-              <button
-                onClick={() => handleDelete(item.id)}
-                className="ml-4 bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex-shrink-0"
-              >
-                🗑️ Hapus
-              </button>
-            </div>
+      {items.length===0&&<div style={{textAlign:'center',color:'rgba(255,255,255,.3)',padding:'60px 0'}}><div style={{fontSize:40,marginBottom:10}}>📭</div><div style={{fontSize:13}}>Belum ada pengumuman</div></div>}
+      {items.map(a=>(
+        <div key={a.id} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.09)',borderRadius:18,padding:16,marginBottom:10,borderLeft:'3px solid #6366f1'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:10,marginBottom:6}}>
+            <div style={{fontSize:14,fontWeight:700,fontFamily:"'Sora',sans-serif",flex:1}}>{a.title}</div>
+            <button onClick={()=>del(a.id)} style={{background:'rgba(239,68,68,.15)',border:'1px solid rgba(239,68,68,.2)',color:'#fca5a5',borderRadius:8,width:28,height:28,cursor:'pointer',fontSize:11,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>🗑</button>
           </div>
-        ))}
-        {items.length === 0 && (
-          <div className="bg-white rounded-2xl p-12 text-center text-slate-400 shadow-sm border border-slate-100">
-            Belum ada pengumuman.
-          </div>
-        )}
-      </div>
+          <div style={{fontSize:10,color:'rgba(255,255,255,.3)',marginBottom:10}}>📅 {new Date(a.created_at).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+          <div style={{fontSize:13,color:'rgba(255,255,255,.65)',lineHeight:1.8}}>{a.content}</div>
+        </div>
+      ))}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-800 font-display mb-5">Buat Pengumuman</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Judul</label>
-                <input
-                  value={form.title}
-                  onChange={e => setForm({ ...form, title: e.target.value })}
-                  required
-                  placeholder="Judul pengumuman..."
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
+      {showModal&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',backdropFilter:'blur(8px)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+          <div style={{background:'#1a1740',border:'1px solid rgba(255,255,255,.12)',borderRadius:24,padding:24,width:'100%',maxWidth:440,boxShadow:'0 32px 80px rgba(0,0,0,.5)'}}>
+            <div style={{fontSize:16,fontWeight:800,fontFamily:"'Sora',sans-serif",color:'#fff',marginBottom:20}}>📢 Buat Pengumuman</div>
+            <form onSubmit={handleSubmit}>
+              <div style={{marginBottom:12}}>
+                <label style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.4)',display:'block',marginBottom:6,letterSpacing:.5,textTransform:'uppercase'}}>Judul *</label>
+                <input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required placeholder="Judul pengumuman..." style={inputStyle}/>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Isi Pengumuman</label>
-                <textarea
-                  value={form.content}
-                  onChange={e => setForm({ ...form, content: e.target.value })}
-                  required
-                  rows={5}
-                  placeholder="Tulis isi pengumuman di sini..."
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
-                />
+              <div style={{marginBottom:20}}>
+                <label style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.4)',display:'block',marginBottom:6,letterSpacing:.5,textTransform:'uppercase'}}>Isi Pengumuman *</label>
+                <textarea value={form.content} onChange={e=>setForm({...form,content:e.target.value})} required placeholder="Tulis isi pengumuman..." rows={5}
+                  style={{...inputStyle,resize:'vertical' as const}}/>
               </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 border border-slate-200 text-slate-600 rounded-xl py-2.5 font-medium text-sm hover:bg-slate-50 transition">
-                  Batal
-                </button>
-                <button type="submit" disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 font-medium text-sm transition disabled:opacity-60">
-                  {loading ? 'Menyimpan...' : 'Publikasi'}
+              <div style={{display:'flex',gap:8}}>
+                <button type="button" onClick={()=>setShowModal(false)} style={{flex:1,border:'1px solid rgba(255,255,255,.12)',background:'transparent',borderRadius:12,padding:11,fontSize:13,fontWeight:600,cursor:'pointer',color:'rgba(255,255,255,.6)',fontFamily:'inherit'}}>Batal</button>
+                <button type="submit" disabled={loading} style={{flex:1,background:'linear-gradient(135deg,#6366f1,#8b5cf6)',border:'none',borderRadius:12,padding:11,fontSize:13,fontWeight:700,cursor:'pointer',color:'#fff',fontFamily:'inherit',opacity:loading?.7:1}}>
+                  {loading?'Menyimpan...':'Simpan ✓'}
                 </button>
               </div>
             </form>

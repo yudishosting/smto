@@ -9,25 +9,22 @@ export async function GET() {
   const auth = getAuthFromCookies();
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const sql = getDb();
-  
-  // Ensure settings table exists
+
   await sql`CREATE TABLE IF NOT EXISTS settings (
     key VARCHAR(100) PRIMARY KEY,
     value TEXT NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW()
   )`;
-  
-  // Default istirahat
+
   await sql`INSERT INTO settings (key, value) VALUES ('break_start','11:00') ON CONFLICT (key) DO NOTHING`;
   await sql`INSERT INTO settings (key, value) VALUES ('break_end','13:00') ON CONFLICT (key) DO NOTHING`;
   await sql`INSERT INTO settings (key, value) VALUES ('break_label','☀️ Jam Istirahat') ON CONFLICT (key) DO NOTHING`;
 
   const rows = await sql`SELECT key, value FROM settings`;
-  const result: Record<string,string> = {};
-  rows.forEach((r: any) => {
-    result[r.key] = r.value;
-});
-
+  const result: Record<string, string> = {};
+  for (const row of rows as Array<{ key: string; value: string }>) {
+    result[row.key] = row.value;
+  }
   return NextResponse.json(result);
 }
 
@@ -36,7 +33,7 @@ export async function POST(req: Request) {
   if (!auth || auth.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const body = await req.json();
   const sql = getDb();
-  
+
   await sql`CREATE TABLE IF NOT EXISTS settings (
     key VARCHAR(100) PRIMARY KEY,
     value TEXT NOT NULL,
